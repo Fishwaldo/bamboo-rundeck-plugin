@@ -16,43 +16,42 @@
 package com.dtolabs.bamboo.plugin.rundeck;
 
 import com.atlassian.bamboo.build.logger.BuildLogger;
-import com.atlassian.bamboo.task.TaskContext;
+import com.atlassian.bamboo.task.CommonTaskContext;
 import com.atlassian.bamboo.task.TaskException;
 import com.atlassian.bamboo.task.TaskResult;
 import com.atlassian.bamboo.task.TaskResultBuilder;
-import com.atlassian.bamboo.task.TaskType;
+import com.atlassian.bamboo.task.CommonTaskType;
 import org.jetbrains.annotations.NotNull;
 
-import org.rundeck.api.RundeckClient;
+import org.rundeck.api.*;
 import org.rundeck.api.domain.RundeckExecution;
 import org.rundeck.api.domain.RundeckOutput;
 import org.rundeck.api.domain.RundeckOutputEntry;
-import com.atlassian.bamboo.v2.build.BuildContext;
+import org.rundeck.api.RunJob;
+import org.rundeck.api.RunJobBuilder;
+import com.atlassian.bamboo.v2.build.CommonContext;
 import com.atlassian.bamboo.variable.VariableContext;
 import java.util.Map;
 import java.util.List;
 import java.util.Properties;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.io.IOException;
 
 
-public abstract class RundeckAPITaskBase implements TaskType
+
+public abstract class RundeckAPITaskBase implements CommonTaskType
 {
 
     public BuildLogger buildLogger;
 
-    private TaskContext taskContext;
-    private void setTaskContext(TaskContext taskContext) {
+    private CommonTaskContext taskContext;
+    private void setTaskContext(CommonTaskContext taskContext) {
        buildLogger = taskContext.getBuildLogger();
        this.taskContext = taskContext;
     }
 
     private Map variableDefinitions;
     private void setVariableDefinitions() {
-        BuildContext buildContext = taskContext.getBuildContext();
-        VariableContext variableContext = buildContext.getVariableContext();
+        CommonContext commonContext = taskContext.getCommonContext();
+        VariableContext variableContext = commonContext.getVariableContext();
         variableDefinitions = variableContext.getDefinitions();
         this.taskContext = taskContext;
     }
@@ -149,19 +148,21 @@ public abstract class RundeckAPITaskBase implements TaskType
     }
 
     private RundeckClient getRundeckClient() throws TaskException {
-       RundeckClient rc = null;
        setRundeckUrl();
        if (null != rundeckApiToken) {
           buildLogger.addBuildLogEntry("constructing RundeckClient using api token method");
-          rc = new RundeckClient(rundeckUrl, rundeckApiToken);
-          return rc;
+         return RundeckClient.builder().url(rundeckUrl).token(rundeckApiToken).build();
        }
        if (null != rundeckApiUser && null != rundeckApiPassword) {
           buildLogger.addBuildLogEntry("constructing RundeckClient using apip user/password method");
-          rc = new RundeckClient(rundeckUrl, rundeckApiUser, rundeckApiPassword);
-          return rc;
+         return RundeckClient.builder().url(rundeckUrl).login(rundeckApiUser, rundeckApiPassword).build();
        }
        throw new TaskException("RundeckClient not set, rundeck apiToken or apiUser/apiPasssword not set");
+    }
+    
+    private RunJob createRunJob(String jobId,Properties options) {
+        return RunJobBuilder.builder().setJobId(jobId).setOptions(options).build();
+
     }
 
     private TaskResult runJob()  throws TaskException {
@@ -173,7 +174,9 @@ public abstract class RundeckAPITaskBase implements TaskType
            buildLogger.addBuildLogEntry("pinging rundeck server");
            rc.ping();
            buildLogger.addBuildLogEntry("running rundeck job, jobId: " + rundeckJobId + " with argProperties: " + jobArgProperties.toString());
-           RundeckExecution rundeckExecution = rc.runJob(rundeckJobId, jobArgProperties); 
+           RunJob job = createRunJob(rundeckJobId, jobArgProperties);
+            buildLogger.addBuildLogEntry(job.getJobId()+"   "+job.toString());
+           RundeckExecution rundeckExecution = rc.runJob(job); 
            RundeckExecution.ExecutionStatus jobStatus = rundeckExecution.getStatus();
 
            // we must get the logs here and send it back to the api caller
@@ -189,6 +192,8 @@ public abstract class RundeckAPITaskBase implements TaskType
               if (null == logEntries) {
                  break;
               }
+             
+              
               for (int i=0; i<logEntries.size(); i++) {   
                  RundeckOutputEntry rundeckOutputEntry = (RundeckOutputEntry)logEntries.get(i);
                  buildLogger.addBuildLogEntry(rundeckOutputEntry.getMessage());
@@ -212,11 +217,11 @@ public abstract class RundeckAPITaskBase implements TaskType
         } else {
            buildLogger.addBuildLogEntry("rundeck integration disabled, NOT running rundeck job");
         }
-        return TaskResultBuilder.create(taskContext).success().build();
+        return TaskResultBuilder.newBuilder(taskContext).success().build();
     }
 
 
-    public TaskResult executeUserPassStrategy(@NotNull final TaskContext taskContext)  throws TaskException
+    public TaskResult executeUserPassStrategy(@NotNull final CommonTaskContext taskContext)  throws TaskException
     {
         setTaskContext(taskContext);
         setVariableDefinitions();
@@ -225,7 +230,7 @@ public abstract class RundeckAPITaskBase implements TaskType
         return runJob();
     }
 
-    public TaskResult executeTokenStrategy(@NotNull final TaskContext taskContext)  throws TaskException
+    public TaskResult executeTokenStrategy(@NotNull final CommonTaskContext taskContext)  throws TaskException
     {
         setTaskContext(taskContext);
         setVariableDefinitions();
@@ -233,6 +238,6 @@ public abstract class RundeckAPITaskBase implements TaskType
         return runJob();
     }
 
-    public abstract TaskResult execute(@NotNull final TaskContext taskContext) throws TaskException;
+    public abstract TaskResult execute(@NotNull final CommonTaskContext taskContext) throws TaskException;
 
 }
