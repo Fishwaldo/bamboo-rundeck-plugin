@@ -37,8 +37,8 @@ https://bitbucket.org/squirmy/bamboo-dotnet-plugin/src/a2c0728be9f3/src/main/res
       <category name=""/>
          -->
       <configuration class="com.dtolabs.bamboo.plugin.rundeck.RundeckAPITokenTaskConfigurator"/>
-      <resource type="freemarker" name="edit" location="editRundeckAPITokenTask.ftl"/>
-      <resource type="freemarker" name="view" location="viewRundeckAPITokenTask.ftl"/>
+      <resource type="freemarker" name="edit" location="templates/editRundeckAPITokenTask.ftl"/>
+      <resource type="freemarker" name="view" location="templates/viewRundeckAPITokenTask.ftl"/>
     </taskType>
 
 
@@ -49,7 +49,7 @@ https://bitbucket.org/squirmy/bamboo-dotnet-plugin/src/a2c0728be9f3/src/main/res
       <category name=""/>
       -->
       <configuration class="com.dtolabs.bamboo.plugin.rundeck.RundeckAPIUserPassTaskConfigurator"/>
-      <resource type="freemarker" name="edit" location="editRundeckAPIUserPassTask.ftl"/>
-      <resource type="freemarker" name="view" location="viewRundeckAPIUserPassTask.ftl"/>
+      <resource type="freemarker" name="edit" location="templates/editRundeckAPIUserPassTask.ftl"/>
+      <resource type="freemarker" name="view" location="templates/viewRundeckAPIUserPassTask.ftl"/>
     </taskType>
 </atlassian-plugin>
