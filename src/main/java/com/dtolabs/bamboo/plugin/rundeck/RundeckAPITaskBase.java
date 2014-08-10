@@ -175,7 +175,6 @@ public abstract class RundeckAPITaskBase implements CommonTaskType
            rc.ping();
            buildLogger.addBuildLogEntry("running rundeck job, jobId: " + rundeckJobId + " with argProperties: " + jobArgProperties.toString());
            RunJob job = createRunJob(rundeckJobId, jobArgProperties);
-            buildLogger.addBuildLogEntry(job.getJobId()+"   "+job.toString());
            RundeckExecution rundeckExecution = rc.runJob(job); 
            RundeckExecution.ExecutionStatus jobStatus = rundeckExecution.getStatus();
 
