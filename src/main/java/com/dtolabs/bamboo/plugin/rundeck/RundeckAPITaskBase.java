@@ -183,7 +183,7 @@ public abstract class RundeckAPITaskBase implements CommonTaskType
            buildLogger.addBuildLogEntry("BEGIN RUNDECK LOG OUTPUT");
            int offset=0;
            while (true) {
-              RundeckOutput rundeckOutput = rc.getJobExecutionOutput(rundeckExecution.getId(), offset, 0, 0);
+              RundeckOutput rundeckOutput = rc.getExecutionOutput(rundeckExecution.getId(), offset, 0, 0);
               if (null == rundeckOutput) {
                  break;
               }
@@ -195,7 +195,8 @@ public abstract class RundeckAPITaskBase implements CommonTaskType
               
               for (int i=0; i<logEntries.size(); i++) {   
                  RundeckOutputEntry rundeckOutputEntry = (RundeckOutputEntry)logEntries.get(i);
-                 buildLogger.addBuildLogEntry(rundeckOutputEntry.getMessage());
+                 if (rundeckOutputEntry.getMessage() != null)
+                	 buildLogger.addBuildLogEntry(rundeckOutputEntry.getMessage()+ " ");
               }
               offset+=rundeckOutput.getOffset();
            }

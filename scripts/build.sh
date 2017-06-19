@@ -57,7 +57,7 @@ RUNDECK_PLUGIN_NAME=bamboo-rundeck-plugin
 
 RUNDECK_PLUGIN_SCM_URL=git://github.com/connaryscott/${RUNDECK_PLUGIN_NAME}.git
 ATLAS_SDK=atlassian-plugin-sdk
-ATLAS_SDK_VERSION=3.8
+ATLAS_SDK_VERSION=6.2.9
 ATLAS_SDK_TGZ=${ATLAS_SDK}-${ATLAS_SDK_VERSION}.tar.gz
 ATLAS_SDK_URL=https://maven.atlassian.com/content/repositories/atlassian-public/com/atlassian/amps/${ATLAS_SDK}/${ATLAS_SDK_VERSION}/${ATLAS_SDK_TGZ}
 
@@ -95,14 +95,14 @@ fi
 #
 # set default settings.xml if not defined
 #
-if [ -z "${M2_SETTINGS_XML}" ]
-then
-   M2_SETTINGS_XML=${ATLAS_SDK_ROOT}/apache-maven/conf/settings.xml
-fi
+#if [ -z "${M2_SETTINGS_XML}" ]
+#then
+#   M2_SETTINGS_XML=${ATLAS_SDK_ROOT}/apache-maven/conf/settings.xml
+#fi
 
 export PATH=${ATLAS_SDK_ROOT}/bin:${PATH}
 
-if ! ${ATLAS_MVN} -s ${M2_SETTINGS_XML} -Dmaven.test.skip=false clean ${MVN_PHASE}
+if ! ${ATLAS_MVN}  -Dmaven.test.skip=false clean ${MVN_PHASE}
 then
       echo "failed executing ${ATLAS_MVN} -Dmaven.test.skip=false clean ${MVN_PHASE}" 1>&2
       exit 1
